@@ -1,37 +1,50 @@
 # GeoTracker-Apple-Automation
-This will aim to present a way to track iOS devices when reaching a specific location, for this repository, it is tracking when I go between work and my home, for some cool insights in the future.
+
+This project presents a method for tracking iOS devices when they reach specific locations. In this repository, the focus is on tracking movement between work and home to gather insights for future analysis.
 
 -----
+### Overview
 
-This app aims to provide a method of tracking timings of entering, leaving work and home locations, through the use of our iPhones, something we carry with us everyday, and usually everywhere we go.
+This app provides a way to monitor the timings of entering and leaving work and home locations using iPhones, which we carry with us every day and almost everywhere we go.
 
-The solution requires three things, 1) simple infrastructure on AWS, 2) iOS Automations Shortcut App and 3) Discord Webhook
+The solution requires three key components:
 
-The simple infrastructure includes:
+1) Simple infrastructure on AWS
+2) iOS Shortcuts Automation App
+3) Discord Webhook
 
-- **DynamoDB**, this will store this within a table named `geo_tracking_ios`.
-- **Lambda Function** for running the handling POST requests and submitting structured data to a `DynamoDB`.
-- **API Gateway** this created the specific endpoint publicly to be connected, connecting to the lambda with endpoint path `/geolog`.
+#### AWS Infrastructure
+
+The AWS infrastructure includes the following components:
+
+- **DynamoDB**, A table named geo_tracking_ios stores the tracking data.
+- **Lambda Function** This function handles POST requests and submits structured data to DynamoDB.
+- **API Gateway** A public endpoint is created to connect with the Lambda function via the /geolog path.
 
 ------
 
-Creation of a Lambda function, `geo_tracker_ios_automate` which is invoked by a call to API Gateway `/geolog`, 
+### Lambda Function Setup
+
+
+A Lambda function, geo_tracker_ios_automate, is invoked by calls to the API Gateway at /geolog.
 
 ![image](https://github.com/user-attachments/assets/3457dcfa-a31c-48e5-bc48-96bb4b617ee5)
 
-The script used for the lambda function requires the addition of a discord [webhook url](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks),
+#### Lambda Script Requirements
 
-In order to submit this to lambda, this must be zipped with dependencies, in order to do this, you must install requests, which is done with the following command.
+The script for the Lambda function requires a Discord [webhook url](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) to send notifications.
+
+To deploy the script to Lambda with its dependencies, you need to install the necessary packages. This can be done with the following command:
 
 ```pip install --platform manylinux2014_x86_64 --target=package --implementation cp --python-version 3.12 --only-binary=:all: --upgrade package_name```
 
-Put the python script and put this within the package directory and then zip this file.
+Place the Python script within the package directory and then zip the contents.
 
-The function will take invokations with the following inputs, 
+#### Lambda Function Input
 
-JSON Body:
+The Lambda function accepts invocations with the following JSON body:
 
-```bash
+```json
 {
     "longitude": "-XX.XXXX",
     "latitude": "XX.XXXX",
@@ -42,13 +55,11 @@ JSON Body:
 
 ```
 
-Here this will be passed to the node, in which different actions can be passed, the lambda has permissions to interact with DynamoDB
+The Lambda function, connected via API Gateway, processes different actions based on the ACTION_LABEL provided. The function has permissions to interact with DynamoDB and stores this information in the geo_tracking_ios table.
 
-It should add this information to the database with table name, geo_tracking_ios, the lambda should use python, simply listening for these requests, as the lambda is connected to via API gateway, and storing this information,
+#### Available Actions
 
-For this system, the following ACTION_LABEL is available,
-
-The message will be dependant on the action send, for example the four different states available are:
+The ACTION_LABEL in the JSON body determines the action being tracked. The available actions are:
 
 ```bash
 enter_work
@@ -57,12 +68,12 @@ enter_home
 leave_home
 ```
 
-This should be handled nicely to present human readable messages like "Michael" title case user attribute, "has entered the workplace - timestamp, this has been recorded on AWS DynamoDB"
+Based on the action, the system generates a human-readable message, e.g., "Michael has entered the workplace - timestamp. This has been recorded on AWS DynamoDB."
 
 --------
 
-#### Example JSON Event Object for Lambda Recieved.
-This is the typical object with the following path and object,
+### Example JSON Event Object for Lambda Recieved.
+Here is an example of the typical event object received by Lambda:
 
 ```json
 {
@@ -103,17 +114,17 @@ This is the typical object with the following path and object,
 }
 ```
 
-
 ------
+#### Architecture Overview
 
-The architecture is shown below,
+The architecture of the system is illustrated below:
 
 ![image](https://github.com/user-attachments/assets/754b024a-74f2-45a0-9a04-51de2d2a60bb)
 
 
 -------
 #### iOS Automation Shortcut
-There is no sharing ability on iOS automation, so manual filling of this is neccesary, in addition to this, limitation of this system, as automations including location services is deemed sensitive and possibly a safety risk, all automations must be run manually by accepting the run button, this is fine if you are using your phone on a constant basis.
+Due to limitations on iOS, sharing automation shortcuts is not possible. Therefore, setting up the automation manually is necessary. Additionally, since location services are considered sensitive, all location-based automations require manual confirmation to run. This is acceptable if you regularly use your phone.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8a18935a-8cba-42ad-850a-feace324d52f" width="45%" />
@@ -123,7 +134,7 @@ There is no sharing ability on iOS automation, so manual filling of this is necc
 
 -------
 #### Discord Webhook Notifications
-This can be shown on a discord channel as shown,
+The system can send notifications to a Discord channel, as shown below:
 
 ![image](https://github.com/user-attachments/assets/f85cc290-5a5b-4e77-b8a5-3bb302489aa6)
 
